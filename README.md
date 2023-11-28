@@ -1,2 +1,2 @@
-# Project_Game1
+# Project_Game_1
 Rhythm Game ver.1
