@@ -1,9 +1,11 @@
 ```java
-package rhythm_game_1_7;
+package rhythm_game_1_10;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -33,22 +35,42 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 	private ImageIcon leftButtonBasicImage = new ImageIcon(Main.class.getResource("../images/leftButtonBasic.png"));
 	private ImageIcon rightButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/rightButtonEntered.png"));
 	private ImageIcon rightButtonBasicImage = new ImageIcon(Main.class.getResource("../images/rightButtonBasic.png"));	
+//난이도버튼	
+	private ImageIcon easyButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/easyButtonEntered.png"));
+	private ImageIcon easyButtonBasicImage = new ImageIcon(Main.class.getResource("../images/easyButtonBasic.png"));
+	private ImageIcon hardButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/hardButtonEntered.png"));
+	private ImageIcon hardButtonBasicImage = new ImageIcon(Main.class.getResource("../images/hardButtonBasic.png"));
+//뒤로가기버튼
+	private ImageIcon backButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/backButtonEntered.png"));
+	private ImageIcon backButtonBasicImage = new ImageIcon(Main.class.getResource("../images/backButtonBasic.png"));
 	
 //이미지
+	private Image gameInfoImage = new ImageIcon(Main.class.getResource("../images/gameInfo.png")).getImage();
+	private Image judgementLineImage = new ImageIcon(Main.class.getResource("../images/judgementLine.png")).getImage();
+	private Image noteRouteImage = new ImageIcon(Main.class.getResource("../images/noteRoute.png")).getImage();
+	private Image noteRouteLineImage = new ImageIcon(Main.class.getResource("../images/noteRouteLine.png")).getImage();
+	
+	private Image noteBasicImage = new ImageIcon(Main.class.getResource("../images/noteBasic.png")).getImage();
+	
 	private Image background = new ImageIcon(Main.class.getResource("../images/introBackground(Title).jpg")).getImage();
 	private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("../images/menuBar.png")));
 	
-//기본 이미지
+//기본 이미지(커서에 따라 바뀌는 이미지)
 	private JButton exitButton = new JButton(exitButtonBasicImage);
 	private JButton startButton = new JButton(startButtonBasicImage);
 	private JButton quitButton = new JButton(quitButtonBasicImage);
 	private JButton leftButton = new JButton(leftButtonBasicImage);
 	private JButton rightButton = new JButton(rightButtonBasicImage);
+	private JButton easyButton = new JButton(easyButtonBasicImage);
+	private JButton hardButton = new JButton(hardButtonBasicImage);
+	private JButton backButton = new JButton(backButtonBasicImage);
 //마우스 좌표	
 	private int mouseX, mouseY;					
 	
-//곡 선택 이미지 on/off	
+//곡 선택 화면 on/off	
 	private boolean isMainScreen = false;
+//게임 화면	
+	private boolean isGameScreen = false;
 	
 //트랙을 담는 배열
 	ArrayList<Track> trackList = new ArrayList<Track>();
@@ -56,10 +78,12 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 //곡 선택화면
 	private Image titleImage;
 	private Image selectedImage;
+	
 	private Music selectedMusic;
+	private Music introMusic = new Music("introMusic.mp3", true);
+	
 	private int nowSelected = 0;
-	
-	
+		
 	public RhythmGame1() {
 		setUndecorated(true); 					//실행했을 때 존재하는 메뉴바가 보이지 않게함
 		setTitle("Rhythm Game1");
@@ -69,12 +93,9 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //게임창을 종료했을 때 프로그램도 같이 종료
 		setVisible(true);						//게임창이 화면에 출력되도록 함
 		setBackground(new Color(0, 0, 0, 0));	//paintComponents()실행시 배경이 회색이 아닌 하얀색으로 바뀜
-		setLayout(null); 						//JLabel 등을 넣었을 때 그 위치 그대로 둔다
-		
+		setLayout(null); 						//JLabel 등을 넣었을 때 그 위치 그대로 둔다		
 //시작화면 음악			
-		Music introMusic = new Music("introMusic.mp3", true);
-		introMusic.start();
-		
+		introMusic.start();		
 //곡 순서(인덱스 순서) > 변경이 용이함
 		trackList.add(new Track("Parade Title Image.png", "Parade Start Image.png",
 				"Parade Game Image.png", "Parade Selected.mp3", "KUWAGO - Parade.mp3"));
@@ -141,18 +162,7 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
 				buttonEnteredMusic.start();
 				
-				introMusic.close();
-			
-				selectTrack(0);//첫 시작때 첫번째 곡 선택
-				
-				startButton.setVisible(false);	
-				quitButton.setVisible(false);	
-				leftButton.setVisible(true);
-				rightButton.setVisible(true);
-				
-				background = new ImageIcon(Main.class.getResource("../images/mainBackground.jpg")).getImage();
-				
-				isMainScreen = true;
+				enterMain();
 			}
 		});
 		add(startButton);
@@ -251,6 +261,96 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 		});
 		add(rightButton);
 //
+//easy버튼
+		easyButton.setVisible(false); // 처음엔 안보이게
+		easyButton.setBounds(340, 620, 150, 50);
+		easyButton.setBorderPainted(false);
+		easyButton.setContentAreaFilled(false);
+		easyButton.setFocusPainted(false);
+		easyButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				easyButton.setIcon(easyButtonEnteredImage);
+				easyButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				Music buttonEnteredMusic = new Music("buttonEnteredMusic.mp3", false);
+				buttonEnteredMusic.start();
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				easyButton.setIcon(easyButtonBasicImage);
+				easyButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
+				buttonEnteredMusic.start();
+				gameStart(nowSelected, "easy");
+			}
+		});
+		add(easyButton);
+//
+//hard버튼
+		hardButton.setVisible(false); // 처음엔 안보이게
+		hardButton.setBounds(790, 620, 150, 50);
+		hardButton.setBorderPainted(false);
+		hardButton.setContentAreaFilled(false);
+		hardButton.setFocusPainted(false);
+		hardButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				hardButton.setIcon(hardButtonEnteredImage);
+				hardButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				Music buttonEnteredMusic = new Music("buttonEnteredMusic.mp3", false);
+				buttonEnteredMusic.start();
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				hardButton.setIcon(hardButtonBasicImage);
+				hardButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
+				buttonEnteredMusic.start();
+				gameStart(nowSelected, "hard");
+			}
+		});
+		add(hardButton);
+//
+//back버튼
+		backButton.setVisible(false); // 처음엔 안보이게
+		backButton.setBounds(1200, 50, 60, 60);
+		backButton.setBorderPainted(false);
+		backButton.setContentAreaFilled(false);
+		backButton.setFocusPainted(false);
+		backButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				backButton.setIcon(backButtonEnteredImage);
+				backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				Music buttonEnteredMusic = new Music("buttonEnteredMusic.mp3", false);
+				buttonEnteredMusic.start();
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				backButton.setIcon(backButtonBasicImage);
+				backButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
+				buttonEnteredMusic.start();
+				backMain();
+			}
+		});
+		add(backButton);
+//	
 //메뉴바
 		menuBar.setBounds(0, 0, 1280, 30);	
 		menuBar.addMouseListener(new MouseAdapter() {
@@ -277,17 +377,40 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 	public void paint(Graphics g) {
 		screenImage = createImage(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
 		screenGraphic = screenImage.getGraphics();
-		screenDraw(screenGraphic);
+		screenDraw((Graphics2D) screenGraphic);			//Graphics2D로 형변환, 글자깨짐 방지
 		g.drawImage(screenImage, 0, 0, null);
 	}
 	
-	public void screenDraw(Graphics g) {
+	public void screenDraw(Graphics2D g) {
 		g.drawImage(background, 0, 0, null);
 		
 		if(isMainScreen)								//곡 선택화면
 		{
 			g.drawImage(selectedImage, 340, 150, null);	//add가 아닌 단순 이미지
 			g.drawImage(titleImage, 340, 70, null);	   	//곡 타이틀 그려주기
+		}
+		if(isGameScreen)								//게임화면
+		{
+			g.drawImage(noteRouteImage, 430, 30, null);
+			g.drawImage(noteRouteImage, 534, 30, null);
+			g.drawImage(noteRouteImage, 638, 30, null);
+			g.drawImage(noteRouteImage, 742, 30, null);
+			g.drawImage(noteRouteLineImage, 426, 30, null);
+			g.drawImage(noteRouteLineImage, 530, 30, null);
+			g.drawImage(noteRouteLineImage, 634, 30, null);
+			g.drawImage(noteRouteLineImage, 738, 30, null);
+			g.drawImage(noteRouteLineImage, 842, 30, null);
+			g.drawImage(gameInfoImage, 0, 660, null);
+			g.drawImage(judgementLineImage, 0, 580, null);
+			
+			g.drawImage(noteBasicImage, 430, 120, null);
+			g.drawImage(noteBasicImage, 534, 400, null);
+			g.drawImage(noteBasicImage, 638, 300, null);
+			
+			//타이틀 제목			
+			g.setColor(Color.white);
+			g.setFont(new Font("Arial", Font.BOLD, 30));
+			g.drawString("KUWAGO - Parade", 20, 702);	
 		}
 		
 		paintComponents(g);				//JLabel등을 JFrame안에 추가(add)하면 그것을 그려준다.(고정된 이미지)
@@ -320,7 +443,49 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 			nowSelected++;
 		selectTrack(nowSelected);
 	}
+//난이도 버튼 눌렀을 때 실행	
+	public void gameStart(int nowSelected, String difficulty) {
+		if(selectedMusic != null)
+			selectedMusic.close();
+		isMainScreen = false;
+		leftButton.setVisible(false);
+		rightButton.setVisible(false);
+		easyButton.setVisible(false);
+		hardButton.setVisible(false);
+		background = new ImageIcon(Main.class.getResource("../images/" + trackList.get(nowSelected).getGameImage())).getImage();
+		backButton.setVisible(true);
+		
+		isGameScreen = true;
+	}
+//뒤로가기 버튼	
+	public void backMain() {
+		isMainScreen = true;
+		leftButton.setVisible(true);
+		rightButton.setVisible(true);
+		easyButton.setVisible(true);
+		hardButton.setVisible(true);
+		background = new ImageIcon(Main.class.getResource("../images/mainBackground.jpg")).getImage();
+		backButton.setVisible(false);
+		selectTrack(nowSelected);
+		
+		isGameScreen = false;
+	}
 	
+	public void enterMain() {
+		
+		startButton.setVisible(false);//메인화면으로 넘어왔을 때 안보이도록
+		quitButton.setVisible(false);	
+		
+		background = new ImageIcon(Main.class.getResource("../images/mainBackground.jpg")).getImage();
+		isMainScreen = true;
+		
+		leftButton.setVisible(true);
+		rightButton.setVisible(true);
+		easyButton.setVisible(true);
+		hardButton.setVisible(true);
+		introMusic.close();
+		
+		selectTrack(0);//첫 시작때 첫번째 곡 선택
+	}
 }
-
 ```
