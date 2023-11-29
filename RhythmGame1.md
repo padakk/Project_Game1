@@ -1,5 +1,5 @@
 ```java
-package rhythm_game_1_4;
+package rhythm_game_1_7;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -8,6 +8,7 @@ import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -19,17 +20,45 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 	private Image screenImage;
 	private Graphics screenGraphic;
 	
-	//변수에 이미지 초기화
-	private Image introBackground = new ImageIcon(Main.class.getResource("../images/introBackground(Title).jpg")).getImage();
+//종료버튼 이미지
+	private ImageIcon exitButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/exitButtonEntered.png"));
+	private ImageIcon exitButtonBasicImage = new ImageIcon(Main.class.getResource("../images/exitButtonBasic.png"));	
+//시작화면 메뉴버튼 이미지
+	private ImageIcon startButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/startButtonEntered.png"));
+	private ImageIcon startButtonBasicImage = new ImageIcon(Main.class.getResource("../images/startButtonBasic.png"));
+	private ImageIcon quitButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/quitButtonEntered.png"));
+	private ImageIcon quitButtonBasicImage = new ImageIcon(Main.class.getResource("../images/quitButtonBasic.png"));
+//좌우버튼	
+	private ImageIcon leftButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/leftButtonEntered.png"));
+	private ImageIcon leftButtonBasicImage = new ImageIcon(Main.class.getResource("../images/leftButtonBasic.png"));
+	private ImageIcon rightButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/rightButtonEntered.png"));
+	private ImageIcon rightButtonBasicImage = new ImageIcon(Main.class.getResource("../images/rightButtonBasic.png"));	
 	
+//이미지
+	private Image background = new ImageIcon(Main.class.getResource("../images/introBackground(Title).jpg")).getImage();
 	private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("../images/menuBar.png")));
 	
-	//
-	private ImageIcon exitButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/exitButtonEntered.png"));
-	private ImageIcon exitButtonBasicImage = new ImageIcon(Main.class.getResource("../images/exitButtonBasic.png"));
-	private JButton exitButton = new JButton(exitButtonBasicImage);//기본 이미지
+//기본 이미지
+	private JButton exitButton = new JButton(exitButtonBasicImage);
+	private JButton startButton = new JButton(startButtonBasicImage);
+	private JButton quitButton = new JButton(quitButtonBasicImage);
+	private JButton leftButton = new JButton(leftButtonBasicImage);
+	private JButton rightButton = new JButton(rightButtonBasicImage);
+//마우스 좌표	
+	private int mouseX, mouseY;					
 	
-	private int mouseX, mouseY;					//마우스 좌표
+//곡 선택 이미지 on/off	
+	private boolean isMainScreen = false;
+	
+//트랙을 담는 배열
+	ArrayList<Track> trackList = new ArrayList<Track>();
+	
+//곡 선택화면
+	private Image titleImage;
+	private Image selectedImage;
+	private Music selectedMusic;
+	private int nowSelected = 0;
+	
 	
 	public RhythmGame1() {
 		setUndecorated(true); 					//실행했을 때 존재하는 메뉴바가 보이지 않게함
@@ -42,8 +71,22 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 		setBackground(new Color(0, 0, 0, 0));	//paintComponents()실행시 배경이 회색이 아닌 하얀색으로 바뀜
 		setLayout(null); 						//JLabel 등을 넣었을 때 그 위치 그대로 둔다
 		
+//시작화면 음악			
+		Music introMusic = new Music("introMusic.mp3", true);
+		introMusic.start();
+		
+//곡 순서(인덱스 순서) > 변경이 용이함
+		trackList.add(new Track("Parade Title Image.png", "Parade Start Image.png",
+				"Parade Game Image.png", "Parade Selected.mp3", "KUWAGO - Parade.mp3"));
+		
+		trackList.add(new Track("Shine Title Image.png", "Shine Start Image.png",
+				"Shine Game Image.png", "Shine Selected.mp3", "PIKASONIC & Couple N - Shine.mp3"));
+		
+		trackList.add(new Track("Ready Title Image.png", "Ready Start Image.png",
+				"Ready Game Image.png", "Ready Selected.mp3", "Stessie - Ready.mp3"));
+		
 	
-//버튼이 메뉴바보다 먼저 구현되어야 버튼이 메뉴바에 가려지지 않음
+//exit버튼 (메뉴바보다 먼저 구현되어야 버튼이 메뉴바에 가려지지 않음)
 		exitButton.setBounds(1245, 0, 30, 30);	//메뉴바의 가장 오른쪽 위치에 버튼위치시키기
 		exitButton.setBorderPainted(false);		
 		exitButton.setContentAreaFilled(false);
@@ -66,7 +109,7 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
 				buttonEnteredMusic.start();
 				try {
-					Thread.sleep(1000);				//소리가 먼저 나오고 나중에 종료되도록
+					Thread.sleep(500);				//소리가 먼저 나오고 나중에 종료되도록
 				} catch (InterruptedException ex) {
 					ex.printStackTrace();
 				}
@@ -74,8 +117,140 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 			}
 		});
 		add(exitButton);
-		
+//		
+//start버튼
+		startButton.setBounds(500, 470, 100, 100);	//x, y, image_width, image_height
+		startButton.setBorderPainted(false);		
+		startButton.setContentAreaFilled(false);
+		startButton.setFocusPainted(false);		
+		startButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				startButton.setIcon(startButtonEnteredImage);
+				startButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				Music buttonEnteredMusic = new Music("buttonEnteredMusic.mp3", false);
+				buttonEnteredMusic.start();
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				startButton.setIcon(startButtonBasicImage);
+				startButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
+				buttonEnteredMusic.start();
 				
+				introMusic.close();
+			
+				selectTrack(0);//첫 시작때 첫번째 곡 선택
+				
+				startButton.setVisible(false);	
+				quitButton.setVisible(false);	
+				leftButton.setVisible(true);
+				rightButton.setVisible(true);
+				
+				background = new ImageIcon(Main.class.getResource("../images/mainBackground.jpg")).getImage();
+				
+				isMainScreen = true;
+			}
+		});
+		add(startButton);
+//		
+//quit버튼
+		quitButton.setBounds(680, 470, 100, 100); 
+		quitButton.setBorderPainted(false);
+		quitButton.setContentAreaFilled(false);
+		quitButton.setFocusPainted(false);
+		quitButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				quitButton.setIcon(quitButtonEnteredImage);
+				quitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				Music buttonEnteredMusic = new Music("buttonEnteredMusic.mp3", false);
+				buttonEnteredMusic.start();
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				quitButton.setIcon(quitButtonBasicImage);
+				quitButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
+				buttonEnteredMusic.start();
+				try {
+					Thread.sleep(500);				
+				} catch (InterruptedException ex) {
+					ex.printStackTrace();
+				}
+				System.exit(0);	
+			}
+		});
+		add(quitButton);
+//	
+//left버튼
+		leftButton.setVisible(false);	//처음엔 안보이게
+		leftButton.setBounds(140, 310, 60, 60);
+		leftButton.setBorderPainted(false);
+		leftButton.setContentAreaFilled(false);
+		leftButton.setFocusPainted(false);
+		leftButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				leftButton.setIcon(leftButtonEnteredImage);
+				leftButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				Music buttonEnteredMusic = new Music("buttonEnteredMusic.mp3", false);
+				buttonEnteredMusic.start();
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				leftButton.setIcon(leftButtonBasicImage);
+				leftButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
+				buttonEnteredMusic.start();
+				selectLeft();
+			}
+		});
+		add(leftButton);
+//
+//right버튼
+		rightButton.setVisible(false);	//처음엔 안보이게
+		rightButton.setBounds(1080, 310, 60, 60);
+		rightButton.setBorderPainted(false);
+		rightButton.setContentAreaFilled(false);
+		rightButton.setFocusPainted(false);
+		rightButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				rightButton.setIcon(rightButtonEnteredImage);
+				rightButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				Music buttonEnteredMusic = new Music("buttonEnteredMusic.mp3", false);
+				buttonEnteredMusic.start();
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				rightButton.setIcon(rightButtonBasicImage);
+				rightButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
+				buttonEnteredMusic.start();
+				selectRight();
+			}
+		});
+		add(rightButton);
+//
 //메뉴바
 		menuBar.setBounds(0, 0, 1280, 30);	
 		menuBar.addMouseListener(new MouseAdapter() {
@@ -95,10 +270,8 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 		});
 		
 		add(menuBar);							//JFrame에 메뉴바 추가
-		
-			
-		Music introMusic = new Music("introMusic.mp3", true);
-		introMusic.start();
+//		
+
 	}
 	
 	public void paint(Graphics g) {
@@ -109,10 +282,45 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 	}
 	
 	public void screenDraw(Graphics g) {
-		g.drawImage(introBackground, 0, 0, null);
-		paintComponents(g);				//JLabel등을 JFrame안에 추가하면 그것을 그려준다.(고정된 이미지)
+		g.drawImage(background, 0, 0, null);
+		
+		if(isMainScreen)								//곡 선택화면
+		{
+			g.drawImage(selectedImage, 340, 150, null);	//add가 아닌 단순 이미지
+			g.drawImage(titleImage, 340, 70, null);	   	//곡 타이틀 그려주기
+		}
+		
+		paintComponents(g);				//JLabel등을 JFrame안에 추가(add)하면 그것을 그려준다.(고정된 이미지)
 		this.repaint();					//이미지가 매순간마다 계속 갱신되도록(더블 버퍼링)
 	}
+	
+//타이틀 이미지 값을 받아서 곡 선택기능 구현	
+	public void selectTrack(int nowSelected) {
+		if(selectedMusic != null)
+			selectedMusic.close();
+		titleImage = new ImageIcon(Main.class.getResource("../images/" + trackList.get(nowSelected).getTitleImage())).getImage();
+		selectedImage = new ImageIcon(Main.class.getResource("../images/" + trackList.get(nowSelected).getStartImage())).getImage();
+		selectedMusic = new Music(trackList.get(nowSelected).getStartMusic(), true);
+		selectedMusic.start();
+	}
 
+//첫번째 곡에서 왼쪽 눌렀을 때
+	public void selectLeft() {
+		if(nowSelected == 0)
+			nowSelected = trackList.size() - 1;
+		else 
+			nowSelected--;
+		selectTrack(nowSelected);
+	}
+//마지막 곡에서 오른쪽 눌렀을 때
+	public void selectRight() {
+		if(nowSelected == trackList.size()-1)
+			nowSelected = 0;
+		else 
+			nowSelected++;
+		selectTrack(nowSelected);
+	}
+	
 }
+
 ```
