@@ -1,5 +1,5 @@
 ```java
-package rhythm_game_1_3;
+package rhythm_game_1_16;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -53,5 +53,4 @@ public class Music extends Thread {	//스레드 = 하나의 작은 프로그램
 		}
 	}
 }
-
 ```

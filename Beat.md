@@ -1,5 +1,5 @@
 ```java
-package rhythm_game_1_14;
+package rhythm_game_1_16;
 
 public class Beat {
 

@@ -1,9 +1,8 @@
 ```java
-package rhythm_game_1_10;
+package rhythm_game_1_16;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -45,13 +44,6 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 	private ImageIcon backButtonBasicImage = new ImageIcon(Main.class.getResource("../images/backButtonBasic.png"));
 	
 //이미지
-	private Image gameInfoImage = new ImageIcon(Main.class.getResource("../images/gameInfo.png")).getImage();
-	private Image judgementLineImage = new ImageIcon(Main.class.getResource("../images/judgementLine.png")).getImage();
-	private Image noteRouteImage = new ImageIcon(Main.class.getResource("../images/noteRoute.png")).getImage();
-	private Image noteRouteLineImage = new ImageIcon(Main.class.getResource("../images/noteRouteLine.png")).getImage();
-	
-	private Image noteBasicImage = new ImageIcon(Main.class.getResource("../images/noteBasic.png")).getImage();
-	
 	private Image background = new ImageIcon(Main.class.getResource("../images/introBackground(Title).jpg")).getImage();
 	private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("../images/menuBar.png")));
 	
@@ -83,9 +75,23 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 	private Music introMusic = new Music("introMusic.mp3", true);
 	
 	private int nowSelected = 0;
+	
+	public static Game game;					//한번에 한 게임만 실행됨(프로젝트 전체에서 통용됨)
 		
 	public RhythmGame1() {
-		setUndecorated(true); 					//실행했을 때 존재하는 메뉴바가 보이지 않게함
+		
+// 곡 순서(인덱스 순서) > 변경이 용이함
+		trackList.add(new Track("Parade Title Image.png", "Parade Start Image.png", "Parade Game Image.png",
+				"Parade Selected.mp3", "KUWAGO - Parade.mp3", "KUWAGO - Parade"));
+
+		trackList.add(new Track("Shine Title Image.png", "Shine Start Image.png", "Shine Game Image.png",
+				"Shine Selected.mp3", "PIKASONIC & Couple N - Shine.mp3", "PIKASONIC & Couple N - Shine"));
+
+		trackList.add(new Track("Ready Title Image.png", "Ready Start Image.png", "Ready Game Image.png",
+				"Ready Selected.mp3", "Stessie - Ready.mp3", "Stessie - Ready"));
+//		
+		
+		setUndecorated(true); 					//실행했을 때 존재하는 메뉴바
 		setTitle("Rhythm Game1");
 		setSize(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
 		setResizable(false);					//창 크기 변경불가
@@ -93,19 +99,12 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //게임창을 종료했을 때 프로그램도 같이 종료
 		setVisible(true);						//게임창이 화면에 출력되도록 함
 		setBackground(new Color(0, 0, 0, 0));	//paintComponents()실행시 배경이 회색이 아닌 하얀색으로 바뀜
-		setLayout(null); 						//JLabel 등을 넣었을 때 그 위치 그대로 둔다		
+		setLayout(null); 						//JLabel 등을 넣었을 때 그 위치 그대로 둔다
+		
+		addKeyListener(new KeyListener());		//키보드이벤트
 //시작화면 음악			
 		introMusic.start();		
-//곡 순서(인덱스 순서) > 변경이 용이함
-		trackList.add(new Track("Parade Title Image.png", "Parade Start Image.png",
-				"Parade Game Image.png", "Parade Selected.mp3", "KUWAGO - Parade.mp3"));
-		
-		trackList.add(new Track("Shine Title Image.png", "Shine Start Image.png",
-				"Shine Game Image.png", "Shine Selected.mp3", "PIKASONIC & Couple N - Shine.mp3"));
-		
-		trackList.add(new Track("Ready Title Image.png", "Ready Start Image.png",
-				"Ready Game Image.png", "Ready Selected.mp3", "Stessie - Ready.mp3"));
-		
+	
 	
 //exit버튼 (메뉴바보다 먼저 구현되어야 버튼이 메뉴바에 가려지지 않음)
 		exitButton.setBounds(1245, 0, 30, 30);	//메뉴바의 가장 오른쪽 위치에 버튼위치시키기
@@ -286,7 +285,7 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 			public void mousePressed(MouseEvent e) {
 				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
 				buttonEnteredMusic.start();
-				gameStart(nowSelected, "easy");
+				gameStart(nowSelected, "EASY");
 			}
 		});
 		add(easyButton);
@@ -316,7 +315,7 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 			public void mousePressed(MouseEvent e) {
 				Music buttonEnteredMusic = new Music("buttonPressedMusic.mp3", false);
 				buttonEnteredMusic.start();
-				gameStart(nowSelected, "hard");
+				gameStart(nowSelected, "HARD");
 			}
 		});
 		add(hardButton);
@@ -377,7 +376,7 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 	public void paint(Graphics g) {
 		screenImage = createImage(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
 		screenGraphic = screenImage.getGraphics();
-		screenDraw((Graphics2D) screenGraphic);			//Graphics2D로 형변환, 글자깨짐 방지
+		screenDraw((Graphics2D)screenGraphic);			//Graphics2D로 형변환, 글자깨짐 방지
 		g.drawImage(screenImage, 0, 0, null);
 	}
 	
@@ -391,29 +390,17 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 		}
 		if(isGameScreen)								//게임화면
 		{
-			g.drawImage(noteRouteImage, 430, 30, null);
-			g.drawImage(noteRouteImage, 534, 30, null);
-			g.drawImage(noteRouteImage, 638, 30, null);
-			g.drawImage(noteRouteImage, 742, 30, null);
-			g.drawImage(noteRouteLineImage, 426, 30, null);
-			g.drawImage(noteRouteLineImage, 530, 30, null);
-			g.drawImage(noteRouteLineImage, 634, 30, null);
-			g.drawImage(noteRouteLineImage, 738, 30, null);
-			g.drawImage(noteRouteLineImage, 842, 30, null);
-			g.drawImage(gameInfoImage, 0, 660, null);
-			g.drawImage(judgementLineImage, 0, 580, null);
-			
-			g.drawImage(noteBasicImage, 430, 120, null);
-			g.drawImage(noteBasicImage, 534, 400, null);
-			g.drawImage(noteBasicImage, 638, 300, null);
-			
-			//타이틀 제목			
-			g.setColor(Color.white);
-			g.setFont(new Font("Arial", Font.BOLD, 30));
-			g.drawString("KUWAGO - Parade", 20, 702);	
+			game.screenDraw(g); 		//클래스로 따로 구현(게임은 하나의 단위로서 다뤄짐)
 		}
 		
 		paintComponents(g);				//JLabel등을 JFrame안에 추가(add)하면 그것을 그려준다.(고정된 이미지)
+		
+		try {							//시간차를 두면서 실행되도록 함
+			Thread.sleep(5);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		this.repaint();					//이미지가 매순간마다 계속 갱신되도록(더블 버퍼링)
 	}
 	
@@ -456,6 +443,12 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 		backButton.setVisible(true);
 		
 		isGameScreen = true;
+		
+		game = new Game(trackList.get(nowSelected).getTitleName(), difficulty, trackList.get(nowSelected).getGameMusic());
+		game.start();		//run() 함수 실행
+		
+		setFocusable(true);	//키보드가 정상 작동하도록 포커스 맞춰주기
+		requestFocus();		//해당 코드 없으면 작동을 안함
 	}
 //뒤로가기 버튼	
 	public void backMain() {
@@ -469,6 +462,7 @@ public class RhythmGame1 extends JFrame{//GUI 기반 프로그램을 만들기 �
 		selectTrack(nowSelected);
 		
 		isGameScreen = false;
+		game.close(); 		//곡 종료
 	}
 	
 	public void enterMain() {

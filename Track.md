@@ -1,5 +1,5 @@
 ```java
-package rhythm_game_1_7;
+package rhythm_game_1_16;
 
 public class Track {//하나의 곡에 대한 정보(앨범, 제목, 음악파일 등)
 					//객체지향
@@ -7,7 +7,10 @@ public class Track {//하나의 곡에 대한 정보(앨범, 제목, 음악파�
 	private String startImage; 	// 게임 선택 창 표지 이미지
 	private String gameImage;	// 곡 실행했을 때 게임화면 이미지
 	private String startMusic; 	// 게임 선택 창 음악
-	private String gameMusic; 	// 곡 실행했을 때 음악
+	private String gameMusic; 	// 곡 실행했을 때 음악	
+	private String titleName;	// 곡 제목
+	
+	
 	public String getTitleImage() {
 		return titleImage;
 	}
@@ -38,14 +41,22 @@ public class Track {//하나의 곡에 대한 정보(앨범, 제목, 음악파�
 	public void setGameMusic(String gameMusic) {
 		this.gameMusic = gameMusic;
 	}
+	public String getTitleName() {
+		return titleName;
+	}
+	public void setTitleName(String titleName) {
+		this.titleName = titleName;
+	}
+	
 //생성자	
-	public Track(String titleImage, String startImage, String gameImage, String startMusic, String gameMusic) {
+	public Track(String titleImage, String startImage, String gameImage, String startMusic, String gameMusic, String titleName) {
 		super();
 		this.titleImage = titleImage;
 		this.startImage = startImage;
 		this.gameImage = gameImage;
 		this.startMusic = startMusic;
 		this.gameMusic = gameMusic;
+		this.titleName = titleName;
 	}
 	
 }

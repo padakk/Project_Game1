@@ -1,5 +1,5 @@
 ```java
-package rhythm_game_1_14;
+package rhythm_game_1_16;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -21,6 +21,8 @@ public class Game extends Thread {//Thread > 프로그램 안에서 실행되는
 	private Image noteRouteDImage = new ImageIcon(Main.class.getResource("../images/noteRoute.png")).getImage();
 	private Image noteRouteKImage = new ImageIcon(Main.class.getResource("../images/noteRoute.png")).getImage();
 	private Image noteRouteLImage = new ImageIcon(Main.class.getResource("../images/noteRoute.png")).getImage();
+	
+	private Image flareImage = new ImageIcon(Main.class.getResource("../images/flare.png")).getImage();
 
 	
 	private String titleName; 	//현재 실행할 곡
@@ -60,7 +62,13 @@ public class Game extends Thread {//Thread > 프로그램 안에서 실행되는
 		for(int i=0; i<noteList.size(); i++) //노트 하나씩 그려주기
 		{
 			Note note = noteList.get(i);
-			note.screenDraw(g);
+			if(!note.isProceeded()) {
+				noteList.remove(i);
+				i--;
+			}
+			else {
+				note.screenDraw(g);
+			}
 		}
 		
 		
@@ -84,22 +92,27 @@ public class Game extends Thread {//Thread > 프로그램 안에서 실행되는
 		g.setColor(Color.white);
 		g.drawString("0000000", 578, 702);
 		
+		g.drawImage(flareImage, 150, 200, null);
 				
 	}
 //버튼 눌렀을 때 (이펙트, 효과음)
 	public void pressS() {
+		judge("S");
 		noteRouteSImage = new ImageIcon(Main.class.getResource("../images/noteRoutePressed.png")).getImage();
 //		new Music("808 CH.mp3", false).start();//효과음
 	}
 	public void pressD() {
+		judge("D");
 		noteRouteDImage = new ImageIcon(Main.class.getResource("../images/noteRoutePressed.png")).getImage();
 //		new Music("808 CH.mp3", false).start();
 	}
 	public void pressK() {
+		judge("K");
 		noteRouteKImage = new ImageIcon(Main.class.getResource("../images/noteRoutePressed.png")).getImage();
 //		new Music("808 CH.mp3", false).start();
 	}
 	public void pressL() {
+		judge("L");
 		noteRouteLImage = new ImageIcon(Main.class.getResource("../images/noteRoutePressed.png")).getImage();
 //		new Music("808 CH.mp3", false).start();
 	}
@@ -119,7 +132,7 @@ public class Game extends Thread {//Thread > 프로그램 안에서 실행되는
 		
 	@Override
 	public void run() {
-		dropNotes();
+		dropNotes(this.titleName);
 	}
 	
 //실행되는 곡 종료	
@@ -128,41 +141,168 @@ public class Game extends Thread {//Thread > 프로그램 안에서 실행되는
 		this.interrupt();
 	}
 //노트 애니메이션 구현, 노트 채보
-	public void dropNotes() {
+	public void dropNotes(String titleName) {
 		Beat[] beats = null;
-		if(titleName.equals("KUWAGO - Parade")) {
-			int startTime = 2970 - Main.REACH_TIME * 1000;
-			int gap = 240;	//노트 간격
+		if(titleName.equals("KUWAGO - Parade") && difficulty.equals("EASY")) {
+			int startTime = 3000 - Main.REACH_TIME * 1000;
+			int gap = 120;	//노트 간격
 			beats = new Beat[] {
-					new Beat(startTime, "S"),
-					new Beat(startTime + gap * 2, "D"),
-					new Beat(startTime + gap * 4, "K"),
-					new Beat(startTime + gap * 6, "L"),
+					new Beat(startTime + gap * 0, "S"),
+					new Beat(startTime + gap * 4, "L"),
+					new Beat(startTime + gap * 8, "D"),
+					new Beat(startTime + gap * 12, "K"),
+					
+					new Beat(startTime + gap * 16, "S"),
+					new Beat(startTime + gap * 20, "L"),
+					new Beat(startTime + gap * 24, "D"),
+					new Beat(startTime + gap * 28, "K"),
+					new Beat(startTime + gap * 30, "D"),
+					
+					new Beat(startTime + gap * 32, "L"),
+					new Beat(startTime + gap * 36, "S"),
+					new Beat(startTime + gap * 40, "K"),
+					new Beat(startTime + gap * 44, "D"),
+					
+					new Beat(startTime + gap * 48, "L"),
+					new Beat(startTime + gap * 52, "S"),
+					new Beat(startTime + gap * 56, "K"),
+					new Beat(startTime + gap * 60, "S"),
+					new Beat(startTime + gap * 62, "L"),
+					
+					new Beat(startTime + gap * 64, "S"),
+					new Beat(startTime + gap * 68, "S"),
+					new Beat(startTime + gap * 72, "D"),
+					new Beat(startTime + gap * 76, "D"),
+					
+					new Beat(startTime + gap * 80, "K"),
+					new Beat(startTime + gap * 84, "K"),
+					new Beat(startTime + gap * 88, "L"),
+					new Beat(startTime + gap * 92, "L"),
+					
+					new Beat(startTime + gap * 96, "S"),
+					new Beat(startTime + gap * 96, "D"),
+					new Beat(startTime + gap * 100, "K"),
+					new Beat(startTime + gap * 100, "L"),
+					new Beat(startTime + gap * 104, "S"),
+					new Beat(startTime + gap * 104, "D"),
+					new Beat(startTime + gap * 108, "K"),
+					new Beat(startTime + gap * 108, "L"),
+					
+					new Beat(startTime + gap * 112, "S"),
+					new Beat(startTime + gap * 112, "D"),
+					new Beat(startTime + gap * 114, "K"),
+					new Beat(startTime + gap * 114, "L"),
+					new Beat(startTime + gap * 116, "S"),
+					new Beat(startTime + gap * 116, "D"),
+					new Beat(startTime + gap * 118, "K"),
+					new Beat(startTime + gap * 118, "L"),
+					
+					new Beat(startTime + gap * 120, "S"),
+					new Beat(startTime + gap * 120, "D"),
+					new Beat(startTime + gap * 124, "L"),
 			};
 		}
-		
-		else if(titleName.equals("PIKASONIC & Couple N - Shine")) {
+		if(titleName.equals("KUWAGO - Parade") && difficulty.equals("HARD")) {
+			int startTime = 3000 - Main.REACH_TIME * 1000;
+			int gap = 120;	//노트 간격
+			beats = new Beat[] {
+					new Beat(startTime + gap * 0, "K"),
+					new Beat(startTime + gap * 4, "D"),
+					new Beat(startTime + gap * 8, "L"),
+					new Beat(startTime + gap * 12, "S"),
+					
+					new Beat(startTime + gap * 16, "S"),
+					new Beat(startTime + gap * 20, "L"),
+					new Beat(startTime + gap * 24, "D"),
+					new Beat(startTime + gap * 28, "K"),
+					new Beat(startTime + gap * 30, "D"),
+					
+					new Beat(startTime + gap * 32, "L"),
+					new Beat(startTime + gap * 36, "S"),
+					new Beat(startTime + gap * 40, "K"),
+					new Beat(startTime + gap * 44, "D"),
+					
+					new Beat(startTime + gap * 48, "L"),
+					new Beat(startTime + gap * 52, "S"),
+					new Beat(startTime + gap * 56, "K"),
+					new Beat(startTime + gap * 60, "S"),
+					new Beat(startTime + gap * 62, "L"),
+					
+					new Beat(startTime + gap * 64, "S"),
+					new Beat(startTime + gap * 68, "S"),
+					new Beat(startTime + gap * 72, "D"),
+					new Beat(startTime + gap * 76, "D"),
+					
+					new Beat(startTime + gap * 80, "K"),
+					new Beat(startTime + gap * 84, "K"),
+					new Beat(startTime + gap * 88, "L"),
+					new Beat(startTime + gap * 92, "L"),
+					
+					new Beat(startTime + gap * 96, "S"),
+					new Beat(startTime + gap * 96, "D"),
+					new Beat(startTime + gap * 100, "K"),
+					new Beat(startTime + gap * 100, "L"),
+					new Beat(startTime + gap * 104, "S"),
+					new Beat(startTime + gap * 104, "D"),
+					new Beat(startTime + gap * 108, "K"),
+					new Beat(startTime + gap * 108, "L"),
+					
+					new Beat(startTime + gap * 112, "S"),
+					new Beat(startTime + gap * 112, "D"),
+					new Beat(startTime + gap * 114, "K"),
+					new Beat(startTime + gap * 114, "L"),
+					new Beat(startTime + gap * 116, "S"),
+					new Beat(startTime + gap * 116, "D"),
+					new Beat(startTime + gap * 118, "K"),
+					new Beat(startTime + gap * 118, "L"),
+					
+					new Beat(startTime + gap * 120, "S"),
+					new Beat(startTime + gap * 120, "D"),
+					new Beat(startTime + gap * 124, "L"),
+			};
+		}
+		else if(titleName.equals("PIKASONIC & Couple N - Shine") && difficulty.equals("EASY")) {
 			int startTime = 2750 - Main.REACH_TIME * 1000;
 			int gap = 166;
 			beats = new Beat[] {
-					new Beat(startTime, "S"),
+					new Beat(startTime + gap * 0, "S"),
 					new Beat(startTime + gap * 2, "D"),
 					new Beat(startTime + gap * 4, "K"),
 					new Beat(startTime + gap * 6, "L"),
 					
 			};
 		}
-		
-		else if(titleName.equals("Stessie - Ready")) {
+		else if(titleName.equals("PIKASONIC & Couple N - Shine") && difficulty.equals("HARD")) {
+			int startTime = 2750 - Main.REACH_TIME * 1000;
+			int gap = 166;
+			beats = new Beat[] {
+					new Beat(startTime + gap * 0, "S"),
+					new Beat(startTime + gap * 2, "D"),
+					new Beat(startTime + gap * 4, "K"),
+					new Beat(startTime + gap * 6, "L"),
+					
+			};
+		}
+		else if(titleName.equals("Stessie - Ready") && difficulty.equals("EASY")) {
 			int startTime = 2490 - Main.REACH_TIME * 1000;
 			int gap = 150;
 			beats = new Beat[] {
-					new Beat(startTime, "S"),
+					new Beat(startTime + gap * 0, "S"),
 					new Beat(startTime + gap * 2, "D"),
 					new Beat(startTime + gap * 4, "K"),
 					new Beat(startTime + gap * 6, "L"),	
 			};
-		}	
+		}
+		else if(titleName.equals("Stessie - Ready") && difficulty.equals("HARD")) {
+			int startTime = 2490 - Main.REACH_TIME * 1000;
+			int gap = 150;
+			beats = new Beat[] {
+					new Beat(startTime + gap * 0, "S"),
+					new Beat(startTime + gap * 2, "D"),
+					new Beat(startTime + gap * 4, "K"),
+					new Beat(startTime + gap * 6, "L"),	
+			};
+		}
 //		
 		int i = 0;
 		gameMusic.start(); //배열의 초기화에 걸리는 시간 때문에 이곳에 위치
@@ -182,12 +322,21 @@ public class Game extends Thread {//Thread > 프로그램 안에서 실행되는
 			if(!dropped) {
 				try {
 					Thread.sleep(5);
-				} catch (Exception e) {
-					e.printStackTrace();
+				} catch (InterruptedException e) {
+					
 				}
 			}
 		}
-		
+	}
+	
+	public void judge(String input) {
+		for(int i=0; i<noteList.size(); i++) {
+			Note note = noteList.get(i);
+			if(input.equals(note.getNoteType())) {
+				note.judge();
+				break;
+			}
+		}
 	}
 }
 ```
